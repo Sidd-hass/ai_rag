@@ -1,0 +1,20 @@
+version: "3"
+
+services:
+
+  app:
+    build: .
+    container_name: rag_api
+    volumes:
+      - ./data:/app/data
+
+  caddy:
+    image: caddy:latest
+    container_name: caddy_proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    depends_on:
+      - app

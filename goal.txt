@@ -1,0 +1,237 @@
+FastAPI + LangChain + FAISS + ollama + Mistral + Docker + caddy
+
+
+
+
+
+
+
+🚀 Phase 2 — Improvements Roadmap
+1️⃣ Fix Deprecated Embedding Package
+
+Your logs showed a deprecation warning.
+
+Install new package
+pip install -U langchain-huggingface
+Update code
+
+Old:
+
+from langchain.embeddings import HuggingFaceEmbeddings
+
+New:
+
+from langchain_huggingface import HuggingFaceEmbeddings
+2️⃣ Persist Vector Database (Very Important)
+
+Right now your vectors are lost when the server restarts.
+
+Add persistence for FAISS.
+
+Save vector DB
+vector_store.save_local("vector_db")
+Load vector DB
+vector_store = FAISS.load_local("vector_db", embeddings)
+
+Benefit:
+
+Server restart
+↓
+Vectors still available
+↓
+No need to re-upload PDF
+3️⃣ Support Multiple PDFs
+
+Currently system probably supports only one PDF.
+
+Improve it:
+
+uploads/
+   pdf1.pdf
+   pdf2.pdf
+   pdf3.pdf
+
+Add metadata:
+
+Document(
+    page_content=text,
+    metadata={"source": filename}
+)
+
+Now answers can reference which PDF the info came from.
+
+4️⃣ Improve Chunking Strategy
+
+Current chunking is probably simple.
+
+Better configuration:
+
+chunk_size = 1000
+chunk_overlap = 200
+
+Better chunking improves retrieval accuracy.
+
+5️⃣ Add Retrieval Chain
+
+Instead of manually creating prompts, use LangChain retriever.
+
+Example:
+
+retriever = vector_store.as_retriever()
+docs = retriever.get_relevant_documents(question)
+
+Cleaner architecture.
+
+6️⃣ Add Chat History (Conversation Memory)
+
+Right now each question is isolated.
+
+Add memory:
+
+User: What is this document about?
+AI: It explains Kubernetes.
+
+User: Who created it?
+AI: (should understand "it")
+
+Without memory → second question fails.
+
+7️⃣ Improve Prompt Engineering
+
+Instead of simple prompts:
+
+Answer the question based on context
+
+Use structured prompt:
+
+You are a helpful AI assistant.
+
+Use the provided context to answer the question.
+
+If the answer is not in the context, say:
+"I could not find this in the document."
+
+Prevents hallucination.
+
+8️⃣ Add Streaming Responses
+
+Right now responses come after full generation.
+
+Enable streaming with Ollama.
+
+Result:
+
+token by token generation
+
+Like ChatGPT typing.
+
+9️⃣ Add Frontend UI
+
+Right now it is API only.
+
+Add UI:
+
+Options:
+
+Tool	Use case
+Streamlit	fastest
+React	customizable
+Next.js	production
+
+Example UI:
+
+Upload PDF
+↓
+Ask question
+↓
+See answer
+🔟 Dockerize the Application
+
+Since you already work with containers, create a Docker image.
+
+Example structure:
+
+Dockerfile
+docker-compose.yml
+app/
+
+Containerize:
+
+FastAPI
+
+Ollama
+
+Vector storage
+
+1️⃣1️⃣ Add Logging and Error Handling
+
+Production APIs must handle:
+
+invalid PDF
+large files
+empty questions
+
+Add proper error messages.
+
+1️⃣2️⃣ Improve Performance
+
+Possible optimizations:
+
+cache embeddings
+limit chunk count
+top_k retrieval
+
+Example:
+
+similarity_search(query, k=3)
+📊 Final Phase-2 Architecture
+User
+ │
+ ▼
+Frontend UI
+ │
+ ▼
+FastAPI
+ │
+ ▼
+PDF Upload
+ │
+ ▼
+Text Chunking
+ │
+ ▼
+Embeddings
+(all-MiniLM-L6-v2)
+ │
+ ▼
+FAISS Vector DB
+ │
+ ▼
+Retriever
+ │
+ ▼
+LLM
+(Mistral via Ollama)
+ │
+ ▼
+Answer
+⭐ Phase 2 Checklist
+
+You should implement these in order:
+
+1️⃣ Fix embedding package
+2️⃣ Save FAISS vector DB
+3️⃣ Support multiple PDFs
+4️⃣ Improve chunking
+5️⃣ Add retriever abstraction
+6️⃣ Add chat memory
+7️⃣ Improve prompts
+8️⃣ Add streaming responses
+9️⃣ Build frontend UI
+🔟 Dockerize project
+1️⃣1️⃣ Add logging & validation
+1️⃣2️⃣ Optimize performance
+
+
+#### pending #####
+1. stuck at implementing the multiple files uploads in main.py 
