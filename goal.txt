@@ -17,3 +17,7 @@ You should implement these in order:
 🔟 Dockerize project
 1️⃣1️⃣ Add logging & validation
 1️⃣2️⃣ Optimize performance
+
+
+
+
