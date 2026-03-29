@@ -35,9 +35,21 @@ services:
     volumes:
       - ./uploads:/app/uploads
       - ./vector_db:/app/vector_db
-    # We don't expose 8000 to the host because Caddy will handle it on port 80
 
-  # 4. Reverse Proxy (Caddy)
+  # 4. Frontend (Streamlit) - ADDED THIS
+  frontend:
+    build: .
+    container_name: streamlit_ui
+    # This overrides the Dockerfile's CMD to start Streamlit
+    command: streamlit run frontend.py --server.port 8501 --server.address 0.0.0.0
+    depends_on:
+      - backend
+    environment:
+      - BACKEND_URL=http://backend:8000
+    ports:
+      - "8501:8501"
+
+  # 5. Reverse Proxy (Caddy)
   caddy:
     image: caddy:latest
     container_name: caddy_proxy
@@ -50,6 +62,7 @@ services:
       - caddy_config:/config
     depends_on:
       - backend
+      - frontend
 
 volumes:
   caddy_data:
