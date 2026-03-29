@@ -1,0 +1,8 @@
+venv/
+.git/
+__pycache__/
+.env
+uploads/*
+vector_db/*
+*.pyc
+.ipynb_checkpoints/

@@ -1,13 +1,43 @@
-version: "3"
-
 services:
-
-  app:
-    build: .
-    container_name: rag_api
+  # 1. AI Engine (Ollama)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
     volumes:
-      - ./data:/app/data
+      - ./ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  # 2. Automation: Pulls Mistral model on startup
+  ollama-pull-model:
+    image: curlimages/curl:latest
+    container_name: ollama-pull-model
+    depends_on:
+      ollama:
+        condition: service_healthy
+    entrypoint: /bin/sh
+    command: >
+      -c "curl -X POST http://ollama:11434/api/pull -d '{\"name\": \"mistral\"}'"
+
+  # 3. Backend (FastAPI)
+  backend:
+    build: .
+    container_name: fastapi_backend
+    depends_on:
+      - ollama
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+    volumes:
+      - ./uploads:/app/uploads
+      - ./vector_db:/app/vector_db
+    # We don't expose 8000 to the host because Caddy will handle it on port 80
+
+  # 4. Reverse Proxy (Caddy)
   caddy:
     image: caddy:latest
     container_name: caddy_proxy
@@ -16,5 +46,11 @@ services:
       - "443:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
     depends_on:
-      - app
+      - backend
+
+volumes:
+  caddy_data:
+  caddy_config:

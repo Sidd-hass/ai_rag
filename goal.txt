@@ -233,5 +233,5 @@ You should implement these in order:
 1️⃣2️⃣ Optimize performance
 
 
-#### pending #####
-1. stuck at implementing the multiple files uploads in main.py 
+#### done #####
+1. stuck at implementing the multiple files uploads in main.py  
